@@ -1,0 +1,37 @@
+name: Portfolio Static Checks
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portfolio-static-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate static HTML entry point
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required HTML structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s index.html
+          grep -Eiq '<!doctype html' index.html
+          grep -Eiq '<html([[:space:]>])' index.html
+          grep -Eiq '<head([[:space:]>])' index.html
+          grep -Eiq '<title([[:space:]>])' index.html
+          grep -Eiq 'name=["'"'"']viewport["'"'"']' index.html
+          grep -Eiq '</html[[:space:]]*>' index.html
+          echo "Static HTML entry-point checks passed."
